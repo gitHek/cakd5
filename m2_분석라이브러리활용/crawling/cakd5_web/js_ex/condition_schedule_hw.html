@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>JS Basic</title>
+    <script>
+        var date = new Date(); // 현재시간 측정
+        var hours = date.getHours();
+        //조건문
+        if (hours <6){
+            alert('자는 시간 입니다.');
+        }
+        else if (hours < 7){
+            alert('학원가는 준비 해야합니다.');
+        }
+        else if (hours < 9){
+            alert('학원 가야합니다.');
+        }
+        else if (hours < 13){
+            alert('오전수업 중입니다.');
+        }
+        else if (hours < 14){
+            alert('점심 식사 시간입니다.');
+        }
+        else if (hours < 18){
+            alert('오후수업 중입니다.');
+        }
+        else if (hours < 20){
+            alert('집에 가는 중입니다.');
+        }
+        else{
+            alert('밥먹고 씻고 자야지..');
+        }
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

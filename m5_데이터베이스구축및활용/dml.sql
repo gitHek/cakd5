@@ -138,3 +138,173 @@ FROM CUSTOMER
 WHERE CUSTID IN (SELECT CUSTID FROM ORDERS
 WHERE BOOKID IN (SELECT BOOKID FROM BOOK
 WHERE PUBLISHER = '대한미디어'));
+
+-- Q. 출판사별로 출판사의 평균 도서가격보다 비싼 도서를 구하시오.
+SELECT * FROM BOOK;
+SELECT B1.BOOKNAME FROM BOOK B1
+WHERE B1.PRICE > (SELECT AVG(B2.PRICE)
+FROM BOOK B2 WHERE B2.PUBLISHER = B1.PUBLISHER);
+
+--Q. 도서를 주문하지 않은 고객의 이름을 보이시오.
+SELECT NAME
+FROM CUSTOMER
+MINUS
+SELECT NAME
+FROM CUSTOMER
+WHERE CUSTID IN (SELECT CUSTID FROM ORDERS);
+
+SELECT NAME
+FROM CUSTOMER
+WHERE CUSTID NOT IN (SELECT CUSTID FROM ORDERS);
+
+-- Q. 주문이 있는 고객의 이름과 주소를 보이시오.
+SELECT * FROM CUSTOMER;
+SELECT NAME, ADDRESS
+FROM CUSTOMER
+WHERE CUSTID IN (SELECT CUSTID FROM ORDERS);
+
+--Q. CUSTOMER 테이블에서 고객벊노가 5인 고객의 주소를 '대한민국 부산'으로 변경하시오
+SELECT * FROM CUSTOMER;
+
+UPDATE CUSTOMER
+SET ADDRESS = '대한민국 부산'
+WHERE CUSTID = 5;
+SELECT * FROM CUSTOMER;
+
+-- Q. customer 테이블에서 박세리의 주소를 김연아의 주소 바꾸세요.
+
+UPDATE customer
+SET address = (SELECT address FROM customer
+WHERE name = '김연아')
+WHERE name = '박세리';
+SELECT * FROM CUSTOMER;
+
+-- Q. customer 테이블에서 고객번호가 5인 고객을 삭제하 후 결과를 확인하세요.
+DELETE customer
+WHERE custid = 5;
+SELECT * FROM customer;
+
+SELECT ABS(-78), ABS(+78) FROM DUAL;
+SELECT ROUND(4.875,1) FROM DUAL;
+select * from orders;
+-- Q. 고객별 평균 주문 금액을 백원 단위로 반올림한 값을 구하시오.
+SELECT custid 고객번호 ,ROUND(AVG(saleprice),-2) 평균주문금액
+FROM orders
+GROUP BY custid;
+
+-- Q. 도서 제목에 '야구'가 포함된 도서를 '농구'로 변경한 후 도서목록, 가격을 보이시오.
+SELECT * FROM book;
+SELECT bookid, REPLACE(bookname,'야구','농구') bookname, price
+FROM book;
+
+-- Q. '굿스포츠'에서 출판한 도서의 제목과 제목의 글자 수, 바이트 수를 보이시오.
+SELECT bookname 제목, LENGTH(bookname) 글자수, LENGTHB(bookname) 바이트수
+FROM book
+WHERE publisher = '굿스포츠';
+
+SELECT * FROM customer;
+INSERT INTO customer(custid,name,adress) VALUES (5,'박세리','대한민국 대전');
+INSERT INTO customer VALUES (5,'박세리','대한민국 대전',NULL);
+INSERT INTO customer VALUES (6,'박세리','대한민국 대전','010-9000-0001');
+DELETE customer WHERE custid = 6;
+
+-- Q. 마당서점의 고객 중세어 같은 성(姓) 을 가진 사람이 몇 명이나 되는지 성별 인원수를 구하시오.
+SELECT SUBSTR(name,1,1) 성, COUNT(*) 인원수
+FROM customer
+GROUP BY SUBSTR(name,1,1);
+
+--Q. 마당서점은 주문일로 부터 10일 후 매출을 확정한다. 각 주문의 확정일자를 구하세요.
+SELECT orderid, custid, bookid, saleprice, orderdate , orderdate + 10 주문확정일자 
+FROM orders;
+
+SELECT orderdate, orderdate + 10 주문확정일자 
+FROM orders;
+
+--Q. DBMS 서버에 설정된 현재 날짜와 시간, 요일을 확인하세요.
+SELECT SYSDATE FROM DUAL;
+SELECT SYSDATE, TO_CHAR(SYSDATE,'yyyy/mm/dd dy hh24:mi:ss') SYSDATE1 FROM DUAL;
+
+--Q. 마당서점이 2020년 7월 7일에 주문받은 도서의 주문번호, 주문일, 고객번호, 도서번호를 모두 보이시오.
+SELECT SYSDATE FROM DUAL;
+SELECT SYSDATE, TO_CHAR(SYSDATE,'yyyy/mm/dd dy hh24:mi:ss') SYSDATE1 FROM DUAL;
+
+SELECT * FROM orders;
+SELECT orderid 주문번호, TO_CHAR(orderdate,'yyyy-mm-dd day') 주문일, custid 고객번호, bookid 도서번호
+FROM orders
+WHERE orderdate = '20-07-07';
+
+--Q. 고객목록에서 고객번호, 이름, 전화번호를 앞의 2명만 보이시오.
+SELECT * FROM customer;
+SELECT ROWNUM 순번, custid 고객번호, name 이름, phone 전화번호
+FROM customer
+WHERE ROWNUM<=2;
+
+--Q. 평균 주문금액 이하의 주문에 대해서 주문번호와 금액을 보이시오.
+SELECT * FROM orders;
+SELECT orderid 주문번호, saleprice 금액
+FROM orders
+WHERE saleprice <= (SELECT AVG(saleprice) FROM orders);
+
+--Q. 각 고객의 평균 주문금액보다 큰 금액의 주문 내역에 대해서 주문번호, 고객번호, 금액을 보이시오.
+SELECT orderid 주문번호, custid 고객번호, saleprice 금액
+FROM orders o1
+WHERE o1.saleprice > (SELECT avg(o2.saleprice) FROM orders o2 WHERE o1.custid = o2.custid);
+
+-- Q. '대한민국'에 거주하는 고객에게 판매한 도서의 총 판매액을 구하시오.
+SELECT SUM(saleprice)
+FROM orders
+WHERE custid in (SELECT custid FROM customer WHERE address LIKE '%대한민국%');
+
+-- Q. 3번고객이 주문한 도서의 최고 금액보다 더 비싼 도서를 구입한 주문의 주문번호와 금액을 보이시오.
+SELECT orderid 주문번호, saleprice 금액
+FROM orders
+WHERE saleprice > (SELECT MAX(saleprice) FROM orders WHERE custid = 3);
+
+select * from customer;
+select * from orders;
+select * from book;
+--[과제] EXISTS 연산자를 사용하여 '대한민국'에 거주하는 고객에게 판매한 도서의 총 판매액을 수하시오.
+SELECT SUM(saleprice)
+FROM orders o
+WHERE EXISTS (SELECT * FROM customer c WHERE address LIKE '%대한민국%' AND c.custid = o.custid');
+
+--[과제] 마당서점의 고객별 판매액을 보이시오(고객이름과 고객별 판매액 출력).
+
+--[과제] 고객번호가 2 이하인 고객의 판매액을 보이시오(고객이름과 고객별 판매액 출력)
+
+--Q. 주소에 '대한민국'을 포함하는 고객들로 구성된 뷰를 만들고 조회하시오. 뷰의 이름은 vw_Customer로 설정하시오.
+CREATE VIEW vw_Customer
+AS SELECT *
+FROM customer
+WHERE address LIKE '%대한민국%';
+
+SELECT * FROM vw_Customer;
+
+SELECT * FROM orders;
+--Q. Orders 테이블에서 고객이름과 도서이름을 바로 확인할 수 있는 뷰를 생성하세요.
+CREATE VIEW v_1
+AS SELECT o.orderid,c.name,b.bookname,o.saleprice,o.orderdate FROM orders o,book b,customer c
+WHERE o.bookid=b.bookid and o.custid = c.custid;
+SELECT * FROM v_1;
+-- ‘김연아’ 고객이 구입한 도서의 주문번호, 도서이름, 주문액을 보이시오.
+SELECT orderid 주문번호, bookname 도서이름, saleprice 주문액
+FROM v_1
+WHERE name = '김연아';
+--[과제] vw_Customer를 미국을 주소로 가진 고객으로 변경하세요.
+CREATE OR REPLACE vw_Customer
+
+--[과제] 앞서 생성한 뷰 vw_Customer를 삭제하시오.
+
+SELECT * FROM employees;
+
+--[과제} EMPLOYEES 테이블에서 commission_pct의 Null 값 개수를 출력하세요.
+--[과제} EMPLOYEES 테이블에서 employee_id가 홀수인 것만 출력하세요.
+--[과제} job_id의 문자 길이를 구하세요.
+--[과제} job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력
+--Q. 입사일 6개월 후 첫 번째 월요일을 직원이름별로 출력하세요.
+--Q. job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력, 단 평균연봉이 5000이상인 경우만 포함
+--Q. job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력, 단 평균연봉이 5000이하인 경우만 포함
+
+
+
+

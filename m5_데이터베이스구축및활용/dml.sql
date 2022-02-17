@@ -263,14 +263,23 @@ WHERE saleprice > (SELECT MAX(saleprice) FROM orders WHERE custid = 3);
 select * from customer;
 select * from orders;
 select * from book;
+
 --[과제] EXISTS 연산자를 사용하여 '대한민국'에 거주하는 고객에게 판매한 도서의 총 판매액을 수하시오.
-SELECT SUM(saleprice)
-FROM orders o
-WHERE EXISTS (SELECT * FROM customer c WHERE address LIKE '%대한민국%' AND c.custid = o.custid');
+SELECT SUM(saleprice) total
+FROM orders o 
+WHERE EXISTS (SELECT * FROM customer c 
+WHERE address LIKE '%대한민국%' AND o.custid = c.custid);
 
 --[과제] 마당서점의 고객별 판매액을 보이시오(고객이름과 고객별 판매액 출력).
+SELECT (SELECT name FROM customer c WHERE c.custid = o.custid) name,
+SUM(saleprice) total FROM orders o
+GROUP BY o.custid;
 
 --[과제] 고객번호가 2 이하인 고객의 판매액을 보이시오(고객이름과 고객별 판매액 출력)
+SELECT	c.name, SUM(o.saleprice) "total"
+FROM (SELECT custid, name FROM Customer WHERE custid <= 2) c,Orders	o
+WHERE c.custid=o.custid
+GROUP BY c.name;
 
 --Q. 주소에 '대한민국'을 포함하는 고객들로 구성된 뷰를 만들고 조회하시오. 뷰의 이름은 vw_Customer로 설정하시오.
 CREATE VIEW vw_Customer
@@ -290,14 +299,21 @@ SELECT * FROM v_1;
 SELECT orderid 주문번호, bookname 도서이름, saleprice 주문액
 FROM v_1
 WHERE name = '김연아';
+
 --[과제] vw_Customer를 미국을 주소로 가진 고객으로 변경하세요.
-CREATE OR REPLACE vw_Customer
+
+CREATE OR REPLACE VIEW vw_Customer
+AS SELECT * FROM customer
+WHERE address LIKE '%미국%';
+SELECT * FROM vw_Customer;
 
 --[과제] 앞서 생성한 뷰 vw_Customer를 삭제하시오.
+DROP VIEW vw_Customer;
 
 SELECT * FROM employees;
 
 --[과제} EMPLOYEES 테이블에서 commission_pct의 Null 값 개수를 출력하세요.
+SELECT 
 --[과제} EMPLOYEES 테이블에서 employee_id가 홀수인 것만 출력하세요.
 --[과제} job_id의 문자 길이를 구하세요.
 --[과제} job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력

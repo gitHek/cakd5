@@ -310,16 +310,203 @@ SELECT * FROM vw_Customer;
 --[과제] 앞서 생성한 뷰 vw_Customer를 삭제하시오.
 DROP VIEW vw_Customer;
 
+--[HR tables]
 SELECT * FROM employees;
 
 --[과제} EMPLOYEES 테이블에서 commission_pct의 Null 값 개수를 출력하세요.
-SELECT 
+SELECT COUNT(*)
+FROM employees
+WHERE commission_pct is Null;
+
 --[과제} EMPLOYEES 테이블에서 employee_id가 홀수인 것만 출력하세요.
+SELECT * FROM employees WHERE MOD(employee_id,2) = 1;
+
 --[과제} job_id의 문자 길이를 구하세요.
+SELECT job_id,LENGTH(job_id) 문자길이 FROM employees ;
+
 --[과제} job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력
+SELECT job_id, SUM(salary) 연봉합계, AVG(salary) 연봉평균, MAX(salary) 최고연봉, MIN(salary) 최저연봉
+FROM employees
+GROUP BY job_id;
+
+
+-- 날짜 관련 함수
+SELECT SYSDATE FROM DUAL;
+SELECT * FROM employees;
+SELECT last_name, hire_date,TRUNC((SYSDATE - hire_date)/365,0) 근속연수 FROM employees;
+
+-- 특정 개월 수를 더한 날짜를 구하기
+SELECT last_name,hire_date, ADD_MONTHS(hire_date,6) FROM employees;
+
+-- 해달 날짜가 속한 월의 말일을 반환하는 함수
+SELECT LAST_DAY(SYSDATE) FROM DUAL;
+
+--Q. 다음 달 말일(hire_date 기준)
+SELECT hire_date, LAST_DAY(LAST_DAY(hire_date)+1) 다음달말일
+FROM employees;
+SELECT hire_date, LAST_DAY(ADD_MONTHS(hire_date,1)) 다음달말일
+FROM employees;
+
+-- 해당 날짜를 기준으로 명시된 요일에 해당하는 다음주 날짜를 반환
+SELECT hire_date,next_day(hire_date,'월')
+FROM employees;
+
+-- months_between() 날짜와 날짜 사이의 개월 수 구하기
+SELECT last_name, TRUNC(MONTHS_BETWEEN(SYSDATE,hire_date),0) 근속월수,ROUND(MONTHS_BETWEEN(SYSDATE,hire_date),0) 근속월수2
+FROM employees;
+
 --Q. 입사일 6개월 후 첫 번째 월요일을 직원이름별로 출력하세요.
+SELECT * FROM employees;
+SELECT first_name, last_name, hire_date, next_day(ADD_MONTHS(hire_date,6),'월') "6개월 후 첫번째 월요일"
+FROM employees;
+
 --Q. job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력, 단 평균연봉이 5000이상인 경우만 포함
---Q. job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력, 단 평균연봉이 5000이하인 경우만 포함
+SELECT job_id, SUM(salary) 연봉합계, AVG(salary) 연봉평균, MAX(salary) 최고연봉, MIN(salary) 최저연봉
+FROM employees
+GROUP BY job_id
+HAVING AVG(salary)>=5000;
+
+--Q. job_id 별로 연봉합계, 연봉평균, 최고연봉, 최저연봉 출력, 단 평균연봉이 5000이상인 경우만 내림차순 정렬
+SELECT job_id, SUM(salary) 연봉합계, AVG(salary) 연봉평균, MAX(salary) 최고연봉, MIN(salary) 최저연봉
+FROM employees
+GROUP BY job_id
+HAVING AVG(salary)>=5000
+ORDER BY AVG(salary) DESC;
+
+--Q. last_name에 L이 포함된 직원의 연봉을 구하세요.
+SELECT last_name, salary
+FROM employees
+WHERE last_name LIKE '%L%';
+
+SELECT last_name, salary
+FROM employees
+WHERE last_name LIKE '%L%' OR last_name LIKE '%l%';
+
+-- Q. job_id에 PROG가 포함된 직원의 입사일을 구하세요.
+SELECT job_id ,last_name, hire_date
+FROM employees
+WHERE job_id LIKE '%PROG%';
+
+--Q. 연봉이 10000$ 이상인 manager_id가 100인 직원의 데이터를 출력하세요.
+SELECT last_name, salary, manager_id
+FROM employees
+WHERE salary>=10000 AND manager_id=100;
+
+--Q. department_id가 100보다 적은 모든 직원의 연봉을 구하세요.
+SELECT last_name,salary,department_id
+FROM employees
+WHERE department_id < 100;
+
+--Q. department_id가 101, 103인 직원의 job_id를 구하세요.
+SELECT job_id,last_name, manager_id
+FROM employees
+WHERE manager_id = 101 OR manager_id = 103;
+
+-- join
+SELECT * FROM employees;
+SELECT * FROM departments;
+
+--Q. 사원번호가 110인 사원의 부서명
+SELECT employee_id, department_name
+FROM employees e,departments d
+WHERE e.department_id = d.department_id AND e.employee_id=110;
+
+SELECT employee_id, department_name
+FROM employees e
+JOIN departments d on e.department_id = d.department_id
+WHERE e.employee_id = 110;
+
+--Q. 사번이 120번인 사람의 사번, 이름 업무(job_id), 업무명(job_title)을 출력
+SELECT e.employee_id 사번,e.first_name 이름,e.last_name 성,e.job_id 업무,j.job_title 업무명
+FROM employees e
+JOIN jobs j on e.job_id = j.job_id
+WHERE e.employee_id = 120;
+
+SELECT e.employee_id 사번,e.first_name 이름,e.last_name 성,e.job_id 업무,j.job_title 업무명
+FROM employees e ,jobs j
+WHERE e.employee_id = 120 and e.job_id = j.job_id;
+
+-- 사번, 이름, department_name, job_title(employees, departments, jobs)
+
+SELECT e.employee_id 사번 ,e.first_name 이름,e.last_name 성,d.department_name 부서명,j.job_title 업무이름
+FROM employees e, departments d, jobs j
+WHERE e.department_id = d.department_id AND e.job_id = j.job_id;
+
+SELECT e.employee_id 사번 ,e.first_name 이름,e.last_name 성,d.department_name 부서명,j.job_title 업무이름
+FROM employees e
+JOIN departments d on e.department_id = d.department_id
+JOIN jobs j on e.job_id = j.job_id
+ORDER BY e.employee_id;
+
+-- self join 하나의 테이블이 두개의 테이블인 것처럼 조인
+SELECT e.employee_id 사번, e.last_name 부서장, m.last_name 사원,m.employee_id 사원
+FROM employees e, employees m  
+WHERE e.employee_id = m.manager_id
+ORDER BY e.employee_id;
+
+-- outer join: 조인조건에 만족하지 못하더라도 해당 행을 나타내고 싶을때 사용
+SELECT e.employee_id 사번, e.last_name 부서장, m.last_name 사원,m.employee_id 사원
+FROM employees e, employees m  
+WHERE e.employee_id = m.manager_id(+);
+
+--Q. 100번 부서의 구성원 모두의 급여보다 더 많은 금여를 받는 사원을 출력
+SELECT last_name, salary
+FROM employees
+WHERE salary >
+ALL(SELECT salary FROM employees
+WHERE department_id = 100);
+
+--[과제] 2005년 이후에 입사한 직원의 사번, 이름, 입사일, 부서명(department_name), 업무명(job_title)을 출력
+SELECT e.employee_id 사번, e.last_name 이름, e.hire_date 입사일, d.department_name 부서명, j.job_title 업무명
+FROM employees e
+JOIN departments d ON d.department_id = e.department_id
+JOIN jobs j ON j.job_id = e.job_id
+WHERE hire_date > '2005/06/17';
+
+--[과제] job_title, department_name 별로 평균 연봉을 구한 후 출력하세요.
+SELECT job_title, department_name, ROUND(AVG(salary)) 평균연봉
+FROM employees e
+JOIN departments d ON d.department_id = e.department_id
+JOIN jobs j ON j.job_id = e.job_id
+GROUP BY job_title, department_name;
+
+--[과제] 평균보다 많은 급여를 받는 직원 검색 후 출력하세요.
+SELECT *
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+--[과제] last_name이 King인 직원의 last_name, hire_date, department_id를 출력하세요
+SELECT last_name, hire_date, department_id
+FROM employees
+WHERE LOWER(last_name) = 'king';
+-- 대소문자 관계없이 찾고싶을때는 이렇게
+
+--[과제] 사번, 이름, 직급 출력하세요. 단, 직급은 아래 기준에 의함
+--salary > 20000 then '대표이사'
+--salary > 15000 then '이사'
+--salary > 10000 then '부장'
+--salary > 5000 then '과장'
+--salary > 3000 then '대리'
+--else '사원'
+
+SELECT employee_id 사번, last_name 이름,
+CASE WHEN salary > 20000 then '대표이사'
+WHEN salary > 15000 then '이사'
+WHEN salary > 10000 then '부장'
+WHEN salary > 5000 then '과장'
+WHEN salary > 3000 then '대리'
+ELSE '사원' END AS 직급
+FROM employees;
+
+SELECT * FROM employees;
+SELECT * FROM departments;
+SELECT * FROM jobs;
+
+
+
+
+
+
 
 
 

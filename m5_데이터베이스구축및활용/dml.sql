@@ -1,3 +1,96 @@
+-- ESCAPE
+SELECT * FROM employees WHERE job_id LIKE '%\_A%' ESCAPE '\';
+SELECT * FROM employees WHERE job_id LIKE '%#_A%' ESCAPE '#';
+
+-- IN : OR 대신 사용
+SELECT * FROM employees WHERE manager_id = 101 or manager_id =  102 or manager_id = 103;
+SELECT * FROM employees WHERE manager_id IN (101,102,103);
+
+-- BETWEEN AND : 두 값 사이의 값(두 값 포함)
+SELECT * FROM employees WHERE manager_id BETWEEN 101 AND 103;
+
+-- IS NULL / IS NOT NULL
+SELECT * FROM employees WHERE commission_pct IS NULL;
+SELECT * FROM employees WHERE commission_pct IS NOT NULL;
+
+--[주요 함수]
+-- MOD : 나머지
+SELECT * FROM employees WHERE MOD (employee_id,2)=1;
+SELECT MOD(10,3) FROM DUAL;
+
+--ROUND()
+SELECT ROUND(355.95555) FROM DUAL;
+SELECT ROUND(355.95555,0) FROM DUAL;
+SELECT ROUND(355.95555,2) FROM DUAL;
+SELECT ROUND(355.95555,-1) FROM DUAL;
+
+--TRUNC()
+SELECT TRUNC(45.5555,1) FROM DUAL;
+SELECT last_name, TRUNC(salary/12,2) FROM employees;
+
+-- 날짜 관련 함수
+SELECT SYSDATE FROM DUAL;
+SELECT SYSDATE +1 FROM DUAL;
+SELECT last_name, TRUNC((SYSDATE - hire_date)/365) 근속년수 FROM employees;
+SELECT last_name,hire_date, ADD_MONTHS(hire_date, 6) FROM employees;
+SELECT LAST_DAY(SYSDATE)-SYSDATE FROM DUAL;
+SELECT hire_date, NEXT_DAY(hire_date,'월') FROM employees;
+SELECT SYSDATE, NEXT_DAY(SYSDATE,'금') FROM DUAL;
+
+-- MONTHS_BETWEEN()
+SELECT last_name, SYSDATE, hire_date, TRUNC(MONTHS_BETWEEN(sysdate, hire_date)) 근속개월 FROM employees;
+
+-- 형변환 함수
+-- number character date
+-- TO_DATE() 문자열을 날짜로
+-- TO_NUMBER , TO_CHAR , TO_DATE
+SELECT last_name, months_between('2012/12/31',hire_date) FROM employees;
+SELECT TRUNC(sysdate - to_date('2014/01/01')) FROM dual;
+
+-- Q. employees 테이블에 있는 직원들에 대하여 현재 기준으로 근속연수를 구하세요.
+SELECT employee_id, last_name , TRUNC((sysdate-hire_date)/365) 근속연수 
+FROM employees;
+
+SELECT TO_DATE('20210101') ,
+TO_CHAR(TO_DATE('20210101'),'MonthDD YYYY','NLS_DATE_LANGUAGE=ENGLISH') format1 FROM dual;
+
+SELECT TO_CHAR(SYSDATE, 'yy/mm/dd hh24:mi:ss') FROM dual;
+SELECT TO_CHAR(SYSDATE, 'yy/mm/dd') FROM dual;
+SELECT TO_CHAR(SYSDATE, 'hh24:mi:ss') FROM dual;
+SELECT TO_CHAR(SYSDATE, 'day') FROM dual;
+SELECT TO_CHAR(SYSDATE, 'month') FROM dual;
+
+-- TO_CHAR
+--9 한자리의 숫자표현
+--0 앞부분을 0으로 표현
+--$ 달러기호를 앞에 표현
+--. 소수점을 표시
+--, 특정 위치에 표시
+--MI 오른쪽에 ? 기호 표시
+--PR  음수값을 <>로 표현
+--EEEE 과학적 표현
+--B 공백을 0으로 표현
+--L 지역통화
+SELECT salary, TO_CHAR(salary, '099999') FROM employees;
+SELECT TO_CHAR(-salary, '999999PR') FROM employees;
+SELECT TO_CHAR(1111, '99.99EEEE') FROM dual;
+SELECT TO_CHAR(1111, 'B9999.99') FROM dual;
+SELECT TO_CHAR(1111, 'L99999') FROM dual;
+
+--WIDTH_BUCKET() 지정값, 최소값, 최대값, BUCKET 개수
+SELECT WIDTH_BUCKET(92,0,100,10) FROM dual;
+SELECT department_id, last_name, salary, WIDTH_BUCKET(salary,0,20000,5) FROM employees WHERE department_id = 50;
+
+--[과제] employees 테이블에서 employee_id, last_name, salary, hire_date 및 입사일 기준으로 근속년수를 계산해서 아래사항을 추가한 후
+-- 출력하세요. 2001년 1월 1일 창업하여 현재(2020년 12월 31일)까지 20년간 운영되어온 회사는 직원의 근속연수에 따라 30등급으로 나누어 등급에
+-- 따라 1000원의 bonus를 지금(bonus 기준 내림차순 정렬)
+SELECT employee_id, last_name, salary, hire_date, 
+TRUNC((TO_DATE('20/12/31')-hire_date)/365) 근속연수,
+WIDTH_BUCKET(TRUNC((TO_DATE('20/12/31')-hire_date)/365),0,20,30)*1000 bonus 
+FROM employees
+ORDER BY bonus DESC;
+
+
 -- dml
 
 DESC BOOK;

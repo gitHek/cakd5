@@ -25,7 +25,7 @@ REGDATE  DATE
 
 DROP TABLE MEMBER;
 
-CREATE TABLE MEMBER
+CREATE TABLE MEMBER1
 (
 ID       VARCHAR2(20),
 PWD      VARCHAR2(20),
@@ -50,6 +50,12 @@ INSERT INTO MEMBER (ID,PWD,TEXT) VALUES('200903','113','Á¤Ä¡´Â ±¹¹ÎÀ» À§ÇØ Á¸ÀçÇ
 -- ±âÁ¸ Å×ÀÌºíÀ» ÀÌ¿ëÇÏ¿© »õ·Î¿î Å×ÀÌºíÀ» »ý¼º
 CREATE TABLE MEMBER1 AS SELECT * FROM MEMBER;
 SELECT * FROM MEMBER1;
+DESC member1;
+CREATE TABLE member2 AS SELECT * FROM member1 WHERE 1=0;
+DESC MEMBER2;
+
+-- Å×ÀÌºíÀÇ ¸ðµç row »èÁ¦
+TRUNCATE TABLE member1;
 
 -- Å×ÀÌºí ¼Ó¼º ¹× Å¸ÀÔ Á¶È¸
 DESC MEMBER;
@@ -66,7 +72,7 @@ ALTER TABLE MEMBER1 RENAME COLUMN BIRTHDAY TO BD;
 ALTER TABLE MEMBER1 DROP COLUMN AGE;
 -- Ãß°¡
 ALTER TABLE MEMBER1 ADD AGE NUMBER;
-
+-- Á¦¾àÁ¶°Ç ¼³Á¤
 ALTER TABLE MEMBER1 ADD CONSTRAINT MEMBER1_PK PRIMARY KEY (ID);
 
 -- [°úÁ¦] MEMBER2 Å×ÀÌºíÀ» »ý¼ºÇÑ ÈÄ ¼öÁ¤, º¯°æ , »èÁ¦ , Ãß°¡ ÀÛ¾÷À» ¼öÇàÇÏ¼¼¿ä. (ÇÐ»ý ÀÌ·Â table)
@@ -81,7 +87,9 @@ CIRCLE VARCHAR2(20),
 AVG_GRADE VARCHAR2(20)
 );
 
-DESC MEMBER2
+DESC MEMBER1;
+
+
 -- ¼öÁ¤
 ALTER TABLE MEMBER2 MODIFY(GENDER NVARCHAR2(2));
 -- º¯°æ
@@ -91,3 +99,30 @@ ALTER TABLE MEMBER2 DROP COLUMN BD;
 -- Ãß°¡
 ALTER TABLE MEMBER2 ADD BIRTHDAY VARCHAR2(20);
 
+--Å×ÀÌºí¸í : PLAYER
+--Å×ÀÌºí ¼³¸í : K-¸®±× ¼±¼öµéÀÇ Á¤º¸¸¦ °¡Áö°í ÀÖ´Â Å×ÀÌºí
+--Ä®·³¸í : 
+--PLAYER_ID (¼±¼öID) ¹®ÀÚ °íÁ¤ ÀÚ¸´¼ö 7ÀÚ¸®,
+--PLAYER_NAME (¼±¼ö¸í) ¹®ÀÚ °¡º¯ ÀÚ¸´¼ö 20ÀÚ¸®,
+--TEAM_ID (ÆÀID) ¹®ÀÚ °íÁ¤ ÀÚ¸´¼ö 3ÀÚ¸®,
+--JOIN_YYYY (ÀÔ´Ü³âµµ) ¹®ÀÚ °íÁ¤ ÀÚ¸´¼ö 4ÀÚ¸®,
+--POSITION (Æ÷Áö¼Ç) ¹®ÀÚ °¡º¯ ÀÚ¸´¼ö 10ÀÚ¸®,
+--BACK_NO (µî¹øÈ£) ¼ýÀÚ 2ÀÚ¸®,
+--NATION (±¹Àû) ¹®ÀÚ °¡º¯ ÀÚ¸´¼ö 20ÀÚ¸®,
+--BIRTH_DATE (»ý³â¿ùÀÏ) ³¯Â¥,
+--Á¦¾àÁ¶°Ç : ±âº»Å°(PRIMARY KEY) :  PLAYER_ID
+--(Á¦¾àÁ¶°Ç¸íÀº PLAYER_PK)
+--°ªÀÌ ¹Ýµå½Ã Á¸Àç (NOT NULL) : PLAYER_NAME, TEAM_ID
+
+CREATE TABLE PLAYER(
+PLAYER_ID NVARCHAR2(7),
+PLAYER_NAME NVARCHAR2(20) NOT NULL,
+TEAM_ID NVARCHAR2(3) NOT NULL,
+JOIN_YYYY NVARCHAR2(4),
+POSITION NVARCHAR2(10),
+BACK_NO NUMBER,
+NATION NVARCHAR2(20),
+BIRTH_DATE DATE,
+CONSTRAINT PLAYER_PK PRIMARY KEY (PLAYER_ID));
+
+DROP TABLE PLAYER;

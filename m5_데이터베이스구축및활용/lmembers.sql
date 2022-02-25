@@ -69,11 +69,15 @@ where year = 2015
 order by 고객번호;
 
 create table purbygap as
-select pur14.고객번호,pur15.구매액-pur14.구매액 차이
+select pur14.고객번호,nvl(pur15.구매액,0)-nvl(pur14.구매액,0) 차이
 from pur14
 join pur15 on pur14.고객번호 = pur15.고객번호;
 
-select * from purbygap;
+select count(*) from purbygap
+where 차이 like '-%';
+
+select count(*) from purbygap_old
+where 차이 like '-%';
 
 
 
@@ -251,3 +255,24 @@ order by year,월;
 
 select * from membership
 order by 가입년월;
+
+
+
+create table gapbytong14 as 
+select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014
+group by 통합분류
+order by 총구매금액 desc;
+
+
+create table gapbytong15 as 
+select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015
+group by 통합분류
+order by 총구매금액 desc;
+
+select g4.통합분류, g5."총구매금액"-g4."총구매금액" 증감 from gapbytong14 g4
+join gapbytong15 g5 on g4.통합분류 = g5.통합분류
+order by 증감;

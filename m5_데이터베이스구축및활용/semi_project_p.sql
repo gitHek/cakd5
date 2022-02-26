@@ -1,3 +1,73 @@
+-- 고객별 2014년 대비 2015년 총구매금액 증감을 테이블로 만들기
+create table pur14 as
+select 고객번호, year ,구매액
+from purbyyear
+where year = 2014
+order by 고객번호;
+
+create table pur15 as
+select 고객번호, year ,구매액
+from purbyyear
+where year = 2015
+order by 고객번호;
+
+create table purbygap as
+select pur14.고객번호,nvl(pur15.구매액,0)-nvl(pur14.구매액,0) 차이
+from pur14
+join pur15 on pur14.고객번호 = pur15.고객번호;
+
+select * from purbygap;
+
+
+-- 성별에 따른 구매 감소고객 수 및 성별전체대비 비율
+-- 여성 7034명, 남성 1583명
+-- 여성 44.2% , 남성 45.4%
+
+select a.성별,감소 감소고객수,round(감소/전체,3) 비율
+from (select 성별, count(고객번호) 전체 from custdemo
+group by 성별
+order by 성별) a
+join 
+(select 성별,count(고객번호) 감소 from custdemo
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
+group by 성별
+order by 성별) b on a.성별 = b.성별;
+
+-- 연령대별 구매 감소 고객 수 및 비율
+
+select a.연령대,감소 감소고객수, round(감소/전체,3) 비율
+from (select 연령대, count(고객번호) 전체 from custdemo
+group by 연령대
+order by 연령대) a
+join 
+(select 연령대,count(고객번호) 감소 from custdemo
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
+group by 연령대
+order by 연령대) b on a.연령대 = b.연령대;
+
+-- 여성의 연령대별 구매 감소 고객비율
+
+select a.연령대, round(감소/전체,3) 
+from (select 연령대, count(고객번호) 전체 from custdemo
+where 성별 = 'F'
+group by 연령대
+order by 연령대) a
+join 
+(select 연령대,count(고객번호) 감소 from custdemo
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and 성별 = 'F'
+group by 연령대
+order by 연령대) b on a.연령대 = b.연령대;
+
+
+
+-- '079' 거주지역의 점포별 2014년 2015년 매출 
+
+select 제휴사,year, sum(구매금액) from purprod p
+join custdemo d on p.고객번호 = d.고객번호
+where 거주지역 = '079'
+group by 제휴사,year
+order by 제휴사,year;
+
 -- 경쟁사 이용률 상위 n명 뽑기
 
 select * from (select 고객번호,count(*) from compet
@@ -21,12 +91,19 @@ where 거주지역 = '079'
 group by 제휴사,year
 order by 제휴사,year;
 
--- 구매 감소고객들의 거주지역 카운트
+-- 구매 감소고객들의 거주지역 카운트 및 비율
 
-select 거주지역, count(고객번호) from custdemo
+select a.거주지역,감소, round(감소/전체,3) 비율
+from (select 거주지역, count(고객번호) 전체 from custdemo
+group by 거주지역
+order by 거주지역) a
+join 
+(select 거주지역,count(고객번호) 감소 from custdemo
 where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
 group by 거주지역
-order by count(고객번호) desc;
+order by 거주지역) b on a.거주지역 = b.거주지역
+order by 비율 desc;
+
 
 -- 구매 감소고객들의 거주지역별 감소액 합
 
@@ -47,55 +124,6 @@ order by sum(차이);
 
 select 제휴사,year, sum(구매금액) from purprod p
 where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
-group by 제휴사,year
-order by 제휴사,year;
-
--- 성별에 따른 구매 감소고객 수
--- 여성 7034명, 남성 1583명
-
-select 성별,count(고객번호) from custdemo
-where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
-group by 성별
-order by 성별;
-
--- 성별별 구매감소 고객 비율
--- 여성 44.2% , 남성 45.4%
-
-select a.성별,round(감소/전체,3) 
-from (select 성별, count(고객번호) 전체 from custdemo
-group by 성별
-order by 성별) a
-join 
-(select 성별,count(고객번호) 감소 from custdemo
-where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
-group by 성별
-order by 성별) b on a.성별 = b.성별;
-
--- 연령대별 구매 감소 고객 수
-
-select 연령대,count(고객번호) from custdemo
-where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
-group by 연령대
-order by 연령대;
-
-
--- 연령대별 구매 감소 고객비율
-
-select a.연령대, round(감소/전체,3) 
-from (select 연령대, count(고객번호) 전체 from custdemo
-group by 연령대
-order by 연령대) a
-join 
-(select 연령대,count(고객번호) 감소 from custdemo
-where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
-group by 연령대
-order by 연령대) b on a.연령대 = b.연령대;
-
--- '079' 거주지역의 점포별 2014년 2015년 매출 
-
-select 제휴사,year, sum(구매금액) from purprod p
-join custdemo d on p.고객번호 = d.고객번호
-where 거주지역 = '079'
 group by 제휴사,year
 order by 제휴사,year;
 
@@ -155,7 +183,7 @@ order by 증감;
 select 통합분류, sum(구매금액) 총구매금액 from purprod p
 join prodcl_new c on c.소분류코드 = p.소분류코드
 join custdemo d on d.고객번호 = p.고객번호
-where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'F'
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'M'
 group by 통합분류
 order by 총구매금액 desc;
 
@@ -163,13 +191,13 @@ select g4.통합분류,nvl(g5."총구매금액",0)-nvl(g4."총구매금액",0) 증감 from
 (select 통합분류, sum(구매금액) 총구매금액 from purprod p
 join prodcl_new c on c.소분류코드 = p.소분류코드
 join custdemo d on d.고객번호 = p.고객번호
-where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014 and 성별 = 'M'
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014 and 성별 = 'F'
 group by 통합분류
 order by 총구매금액 desc) g4
 join (select 통합분류, sum(구매금액) 총구매금액 from purprod p
 join prodcl_new c on c.소분류코드 = p.소분류코드
 join custdemo d on d.고객번호 = p.고객번호
-where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'M'
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'F'
 group by 통합분류
 order by 총구매금액 desc) g5 on g4.통합분류 = g5.통합분류
 order by 증감;
@@ -194,3 +222,24 @@ select c.고객번호,횟수 from custdemo c
 join (select 고객번호 , count(고객번호) 횟수 from compet
 group by 고객번호
 order by 고객번호) d on c.고객번호 = d.고객번호(+));
+
+-- 구매증가고객의 평균 경쟁사 이용횟수 : 1.39회
+select round(avg(nvl(횟수,0)),2) from(
+select c.고객번호,횟수 from custdemo c
+join (select 고객번호 , count(고객번호) 횟수 from compet
+group by 고객번호
+order by 고객번호) d on c.고객번호 = d.고객번호(+))
+where 고객번호 not in (select 고객번호 from purbygap where 차이 like '-%');
+
+-- 성별, 분류별 감소고객들의 총구매금액 및 구매횟수, 평균구매금액
+
+SELECT c.성별,통합분류,SUM(구매금액) 총구매금액 , round(sum(구매금액)/(
+select sum(구매금액) from purprod
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
+),5)*100 "전체대비비율" ,COUNT(*) 구매횟수,ROUND(AVG(구매금액)) 평균구매금액 
+FROM custdemo c, purprod p
+join prodcl_new n on n.소분류코드 = p.소분류코드
+WHERE c.고객번호 = p.고객번호 and C.고객번호 in (select 고객번호 from purbygap where 차이 like '-%')
+GROUP BY c.성별,통합분류
+ORDER BY 총구매금액 desc;
+

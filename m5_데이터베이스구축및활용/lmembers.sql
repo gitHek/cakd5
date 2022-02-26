@@ -256,7 +256,7 @@ order by year,월;
 select * from membership
 order by 가입년월;
 
-
+-- 통합분류별 구매감소고객의 2014년 대비 2015년 증감액 구하기
 
 create table gapbytong14 as 
 select 통합분류, sum(구매금액) 총구매금액 from purprod p
@@ -265,7 +265,6 @@ where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year 
 group by 통합분류
 order by 총구매금액 desc;
 
-
 create table gapbytong15 as 
 select 통합분류, sum(구매금액) 총구매금액 from purprod p
 join prodcl_new c on c.소분류코드 = p.소분류코드
@@ -273,6 +272,44 @@ where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year 
 group by 통합분류
 order by 총구매금액 desc;
 
+
 select g4.통합분류, g5."총구매금액"-g4."총구매금액" 증감 from gapbytong14 g4
 join gapbytong15 g5 on g4.통합분류 = g5.통합분류
 order by 증감;
+
+-- 통합분류별 성별별 2014년대비 2015년도 구매감소고객매출 증감액
+
+select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+join custdemo d on d.고객번호 = p.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'F'
+group by 통합분류
+order by 총구매금액 desc;
+
+select g4.통합분류,nvl(g5."총구매금액",0)-nvl(g4."총구매금액",0) 증감 from
+(select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+join custdemo d on d.고객번호 = p.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014 and 성별 = 'M'
+group by 통합분류
+order by 총구매금액 desc) g4
+join (select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+join custdemo d on d.고객번호 = p.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 and 성별 = 'M'
+group by 통합분류
+order by 총구매금액 desc) g5 on g4.통합분류 = g5.통합분류
+order by 증감;
+
+
+select 제휴사,멤버십명,sum(구매금액) from purprod p
+join membership m on m.고객번호 = p.고객번호
+group by 제휴사,멤버십명
+order by 제휴사,sum(구매금액) desc;
+
+select 멤버십명,count(*) from membership
+group by 멤버십명;
+
+select count(고객번호) from (select 고객번호, count(멤버십명) from membership
+group by 고객번호
+order by count(멤버십명) desc);

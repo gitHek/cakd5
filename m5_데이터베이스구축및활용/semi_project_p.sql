@@ -243,3 +243,4 @@ WHERE c.고객번호 = p.고객번호 and C.고객번호 in (select 고객번호 from purbygap w
 GROUP BY c.성별,통합분류
 ORDER BY 총구매금액 desc;
 
+select

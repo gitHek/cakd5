@@ -243,4 +243,22 @@ WHERE c.고객번호 = p.고객번호 and C.고객번호 in (select 고객번호 from purbygap w
 GROUP BY c.성별,통합분류
 ORDER BY 총구매금액 desc;
 
-select
+-- 30대 이상 여성의 전체구매감소고객증감 대비 구매감소량 : 약 72.72%
+select "30대이상여성감고고객",전체구매감소고객,round("30대이상여성감고고객"/전체구매감소고객,4)*100 비율 from
+(select
+((select sum(구매금액) from purprod p
+join custdemo c on p.고객번호 = c.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 
+and 성별 = 'F' and 연령대 not in ('19세이하','20세~24세','25세~29세'))
+-
+(select sum(구매금액) from purprod p
+join custdemo c on p.고객번호 = c.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014 
+and 성별 = 'F' and 연령대 not in ('19세이하','20세~24세','25세~29세'))) "30대이상여성감고고객"
+,
+((select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015)
+-
+(select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014)) "전체구매감소고객"
+from dual)  ;

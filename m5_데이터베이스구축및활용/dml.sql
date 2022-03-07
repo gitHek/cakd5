@@ -1,6 +1,6 @@
 -- ESCAPE
 SELECT * FROM employees WHERE job_id LIKE '%\_A%' ESCAPE '\';
-SELECT * FROM employees WHERE job_id LIKE '%#_A%' ESCAPE '#';
+SELECT * FROM employees WHERE job_id LIKE '%_A%';
 
 -- IN : OR 대신 사용
 SELECT * FROM employees WHERE manager_id = 101 or manager_id =  102 or manager_id = 103;

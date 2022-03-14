@@ -430,10 +430,6 @@ where 소비재분류 = '편의품'
 order by 구매금액 desc;
 
 
-select c.고객번호,구매일자,count(*) "빈도" from custdemo c
-join purprod p on c.고객번호 = p.고객번호
-group by c.고객번호,구매일자
-order by c.고객번호;
 
 
 CREATE TABLE PP1 AS
@@ -465,7 +461,18 @@ join prodcl2 c on p.소분류코드 = c.소분류코드
 where p.소분류코드 = 'B780301';
 
 
-
+-- 방문빈도수를 구간별로 나눈 최대값
+select 구간,max(빈도) from(
+select ntile(100) over (order by 빈도 desc) as 구간, 고객번호, 빈도 from(
+select 고객번호, count(*) 빈도 from(
+select c.고객번호,구매일자,count(*) "빈도" from custdemo c
+join purprod p on c.고객번호 = p.고객번호
+group by c.고객번호,구매일자
+order by c.고객번호)
+group by 고객번호
+order by 고객번호))
+group by 구간
+order by max(빈도);
 
 
 

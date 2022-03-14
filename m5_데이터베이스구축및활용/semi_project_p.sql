@@ -243,8 +243,100 @@ WHERE c.고객번호 = p.고객번호 and C.고객번호 in (select 고객번호 from purbygap w
 GROUP BY c.성별,통합분류
 ORDER BY 총구매금액 desc;
 
--- 30대 이상 여성의 전체구매감소고객증감 대비 구매감소량 : 약 72.72%
-select "30대이상여성감고고객",전체구매감소고객,round("30대이상여성감고고객"/전체구매감소고객,4)*100 비율 from
+-- 통합분류별 2014년대비 2015년도 증감액
+select g4.통합분류,nvl(g5."총구매금액",0)-nvl(g4."총구매금액",0) 증감 from
+(select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+join custdemo d on d.고객번호 = p.고객번호
+where  year = 2014
+group by 통합분류
+order by 총구매금액 desc) g4
+join (select 통합분류, sum(구매금액) 총구매금액 from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+join custdemo d on d.고객번호 = p.고객번호
+where year = 2015
+group by 통합분류
+order by 총구매금액 desc) g5 on g4.통합분류 = g5.통합분류
+order by 증감;
+
+select 통합분류,sum(구매금액)
+from purprod p
+join prodcl_new c on c.소분류코드 = p.소분류코드
+group by 통합분류
+order by sum(구매금액) desc;
+
+-- 전체 고객의 2014년대비 2015년 매출액 및 성장률
+select (select sum(구매금액) from purprod
+where year = 2014) "2014년 매출",
+(select sum(구매금액) from purprod
+where year = 2015) "2015년 매출",
+round((1-((select sum(구매금액) from purprod
+where year = 2014)
+/(select sum(구매금액) from purprod
+where year = 2015)))*100,3) "성장률"  from DUAL ;
+
+-- 2015년 총 매출과 구매감소고객의 매출 증감 및 비교
+select (select sum(구매금액) from purprod
+where year = 2015) "2015년 매출",
+(select sum(차이) from purbygap
+where 차이 like '-%') "구매감소고객의 2014년 대비 2015년 매출 증감" ,
+round(abs((select sum(차이) from purbygap
+where 차이 like '-%'))/(select sum(구매금액) from purprod
+where year = 2015)*100,4) "비율"
+from dual;
+
+-- 연령대별 2015년 총 매출과 구매감소액 및 비율
+
+select a.연령대,전체 "2015년 매출",감소액 "감소고객의 감소액", round(abs(감소액)/전체*100,3) 비율
+from (select 연령대, sum(구매금액) 전체 from custdemo
+join purprod on purprod.고객번호 = custdemo.고객번호
+where year = 2015
+group by 연령대
+order by 연령대) a
+join 
+(select 연령대,sum(차이) 감소액 from custdemo c
+join purbygap g on g.고객번호 = c.고객번호
+where 차이 like '-%'
+group by 연령대
+order by 연령대) b on a.연령대 = b.연령대;
+
+-- 30대~ 40대 여성 구매감소고객이 전체 구매감소고객중 차지하는 비율
+
+select 연령대, sum(차이), (
+select 연령대,sum(차이) from custdemo c
+join purbygap g on c.고객번호 = g.고객번호 
+where 연령대 in ('30세~34세','35세~39세','40세~44세','45세~49세')
+group by 연령대);
+
+SELECT C.소비재분류, ROUND(AVG(P.구매금액)) 평균, MIN(P.구매금액) 최소값, MAX(P.구매금액) 최대값, MEDIAN(P.구매금액) 중간값
+FROM PURPROD P, PRODCL2 C
+WHERE P.소분류코드 = C.소분류코드
+GROUP BY C.소비재분류
+ORDER BY 평균;
+
+SELECT C.소비재분류, ROUND(AVG(P.구매금액)) 평균, MIN(P.구매금액) 최소값, MAX(P.구매금액) 최대값, MEDIAN(P.구매금액) 중간값
+FROM PURPROD P, PRODCL2 C
+WHERE P.소분류코드 = C.소분류코드
+GROUP BY C.소비재분류
+ORDER BY 평균;
+
+select 중분류명, round(avg(p.구매금액)) from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where 소비재분류 = '편의품'
+group by 중분류명
+order by avg(p.구매금액) desc;
+
+select 소분류명,round(avg(구매금액)) from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where c.중분류명 = '남성정장'
+group by 소분류명
+order by avg(구매금액) desc;
+
+-- 30대 이상 여성의 전체구매감소고객증감 대비 구매감소량 : 약 72.72% 전체 대비 비율 : 11.52%
+select "30대이상여성감고고객",전체구매감소고객,round("30대이상여성감고고객"/전체구매감소고객,4)*100 비율 ,
+(select sum(구매금액) from purprod where year = 2015) "2015전체매출",
+round(abs("30대이상여성감고고객")/(select sum(구매금액) from purprod where year = 2015)*100,2) "매출대비비율"
+from
 (select
 ((select sum(구매금액) from purprod p
 join custdemo c on p.고객번호 = c.고객번호
@@ -262,3 +354,125 @@ where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year 
 (select sum(구매금액) from purprod 
 where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014)) "전체구매감소고객"
 from dual)  ;
+
+-- 30대 ~ 40대 여성의 전체구매감소고객증감 대비 구매감소량 : 약 46.22% , 전체 매출대비 비율 : 7.32%
+select "30대~40대여성감고고객",전체구매감소고객,round("30대~40대여성감고고객"/전체구매감소고객,4)*100 비율,
+(select sum(구매금액) from purprod where year = 2015) "2015전체매출",
+round(abs("30대~40대여성감고고객")/(select sum(구매금액) from purprod where year = 2015)*100,2) "매출대비비율"
+from
+(select
+((select sum(구매금액) from purprod p
+join custdemo c on p.고객번호 = c.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015 
+and 성별 = 'F' and 연령대 in ('30세~34세','35세~39세','40세~44세','45세~49세'))
+-
+(select sum(구매금액) from purprod p
+join custdemo c on p.고객번호 = c.고객번호
+where p.고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014 
+and 성별 = 'F' and 연령대 in ('30세~34세','35세~39세','40세~44세','45세~49세'))) "30대~40대여성감고고객"
+,
+((select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015)
+-
+(select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014)) "전체구매감소고객"
+from dual)  ;
+
+-- 전체구매감소고객의 구매감소량의 전체 매출대비 비율 : 15.84%
+
+select 전체구매감소고객,
+(select sum(구매금액) from purprod where year = 2015) "2015전체매출",
+round(abs("전체구매감소고객")/(select sum(구매금액) from purprod where year = 2015)*100,2) "매출대비비율"
+from
+(select
+((select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2015)
+-
+(select sum(구매금액) from purprod 
+where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014)) "전체구매감소고객"
+from dual)  ;
+
+select * from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where 소비재분류 = '편의품' and 소분류명 = '감자스낵' and 고객번호 = '06207'
+order by 구매일자 desc;
+
+select * from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where 고객번호 = '06207';
+
+select 고객번호 , max(구매일자) from purprod p
+group by 고객번호
+having max(구매일자) < 20150601
+order by 고객번호;
+
+select 구간,max(빈도) from(
+select ntile(100) over (order by 빈도 desc) as 구간 , 고객번호, 빈도  from (select c.고객번호,count(*) "빈도" from custdemo c
+join purprod p on c.고객번호 = p.고객번호
+group by c.고객번호))
+group by 구간
+order by max(빈도);
+
+select 고객번호, count(*) from custdemo c
+join purprod p on c.고객번호 = p.고객번호
+group by c.고객번호;
+
+select 구간,max(빈도) from(
+select ntile(100) over (order by 빈도 desc) as 구간 , 고객번호, 빈도  from (select c.고객번호,count(*) "빈도" from custdemo c
+join purprod p on c.고객번호 = p.고객번호
+group by c.고객번호,구매일자))
+group by 구간
+order by max(빈도);
+
+select P.제휴사,C.소분류명, P.소분류코드, P.고객번호, P.구매일자, P.구매금액, 소비재분류 from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where 소비재분류 = '편의품'
+order by 구매금액 desc;
+
+
+select c.고객번호,구매일자,count(*) "빈도" from custdemo c
+join purprod p on c.고객번호 = p.고객번호
+group by c.고객번호,구매일자
+order by c.고객번호;
+
+
+CREATE TABLE PP1 AS
+select P.제휴사,C.소분류명, P.소분류코드, P.고객번호, P.구매일자, P.구매금액, 소비재분류 from purprod p
+join prodcl2 c on c.소분류코드 = p.소분류코드
+where 소비재분류 = '편의품'
+order by 구매금액 desc;
+
+CREATE TABLE PP1AVG AS
+SELECT 소분류코드,소분류명, ROUND(AVG(구매금액)) 평균 FROM PP1
+GROUP BY 소분류코드, 소분류명;
+
+SELECT * FROM PP1AVG;
+
+CREATE TABLE PP11 AS
+SELECT P.제휴사,P.소분류명, P.소분류코드, P.고객번호, P.구매일자, P.구매금액, 소비재분류 FROM PP1 P
+JOIN PP1AVG A ON P.소분류코드 = A.소분류코드
+WHERE P.구매금액 < (A.평균*30) and P.구매금액 > (A.평균/30)
+ORDER BY 구매금액 DESC;
+
+
+select distinct (p.소분류명) ,p.소분류코드, 구매금액 from pp11 p
+join prodcl2 c on p.소분류코드 = c.소분류코드
+where p.소분류명 not in ('정육세트','멸치세트','청과세트','친환경세트','건과세트','선어세트','굴비세트')
+order by 구매금액 desc;
+
+select avg(구매금액) from purprod p
+join prodcl2 c on p.소분류코드 = c.소분류코드
+where p.소분류코드 = 'B780301';
+
+
+
+
+
+
+
+
+
+
+
+
+

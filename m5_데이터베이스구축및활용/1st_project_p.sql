@@ -101,3 +101,34 @@ where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year 
 (select sum(구매금액) from purprod 
 where 고객번호 in (select 고객번호 from purbygap where 차이 like '-%') and year = 2014)) "전체구매감소고객"
 from dual);
+
+-- 방문빈도수를 구간별로 나눈 최대값
+select 구간,max(빈도) from(
+select ntile(100) over (order by 빈도) as 구간, 고객번호, 빈도 from(
+select 고객번호, count(*) 빈도 from(
+select c.고객번호,구매일자,count(*) "빈도" from custdemo c
+join purprod2 p on c.고객번호 = p.고객번호(+)
+group by c.고객번호,구매일자
+order by c.고객번호)
+group by 고객번호
+order by 고객번호))
+group by 구간
+order by max(빈도);
+
+-- 최근방문일를 구간별로 나눈 최대값
+select 구간, max(최근구매일) from(
+select ntile(100) over(order by 최근구매일) as 구간,고객번호,최근구매일 from(
+select c.고객번호 , max(구매일자) 최근구매일 from purprod2 p
+join custdemo c on c.고객번호 = p.고객번호
+group by c.고객번호))
+group by 구간
+order by max(최근구매일);
+
+-- 총 구매액을 구간별로 나눈 최대값
+select 구간, max(총구매액) from(
+select ntile(100) over(order by 총구매액) as 구간,고객번호,총구매액 from(
+select c.고객번호 , max(구매금액) 총구매액 from purprod2 p
+join custdemo c on c.고객번호 = p.고객번호
+group by c.고객번호))
+group by 구간
+order by max(총구매액);

@@ -22,10 +22,6 @@ from purbyyear
 where year = 2015
 order by 고객번호;
 
-create table purbygap as
-select pur14.고객번호,nvl(pur15.구매액,0)-nvl(pur14.구매액,0) 차이
-from pur14
-join pur15 on pur14.고객번호 = pur15.고객번호;
 
 -- 성별에 따른 구매 감소고객 수 및 성별전체대비 비율
 -- 여성 7083명, 남성 1602명
@@ -135,3 +131,17 @@ join custdemo c on c.고객번호 = p.고객번호
 group by c.고객번호))
 group by 구간
 order by 구간;
+
+-- 분기별 라벨 붙이기
+create table purprod3 as
+(SELECT 제휴사,영수증번호,소분류코드,소분류명,통합분류,소비재분류,고객번호,점포코드,구매일자,구매시간,구매금액,year,월,
+CASE WHEN 구매일자 > 20150931 then 'Q8'
+WHEN 구매일자 > 20150631 then 'Q7'
+WHEN 구매일자 > 20150331 then 'Q6'
+WHEN 구매일자 > 20141231 then 'Q5'
+WHEN 구매일자 > 20140931 then 'Q4'
+WHEN 구매일자 > 20140631 then 'Q3'
+WHEN 구매일자 > 20140331 then 'Q2' 
+ELSE 'Q1' END AS 분기
+FROM purprod2);
+

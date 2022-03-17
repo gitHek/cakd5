@@ -566,8 +566,13 @@ create table purbydiv as
 select a.고객번호, "15H1"/"14H1" 성장률 from custdemo a 
 join (select 고객번호, sum(구매금액) "14H1" from pur14H1 group by 고객번호) b on a.고객번호 = b.고객번호
 join (select 고객번호, sum(구매금액) "15H1" from pur15H1 group by 고객번호) c on a.고객번호 = c.고객번호
-join custorigin d on a.고객번호 = d.기존고객;
+join custorigin d on a.고객번호 = d.고객번호;
 
 (select * from purbydiv
 where 성장률 < 1.062483356);
 
+-- 기존고객이 아닌사람들의 분기별 총 매출
+select 분기, sum(구매금액) from purprod2
+where 고객번호 not in (select * from custorigin)
+group by 분기
+order by 분기;

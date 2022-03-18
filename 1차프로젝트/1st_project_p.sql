@@ -1,50 +1,29 @@
+-- 분기별 라벨 붙이기
+create table purprod3 as
+(SELECT 제휴사,영수증번호,소분류코드,소분류명,통합분류,소비재분류,고객번호,점포코드,구매일자,구매시간,구매금액,year,월,
+CASE WHEN 구매일자 > 20150931 then 'Q8'
+WHEN 구매일자 > 20150631 then 'Q7'
+WHEN 구매일자 > 20150331 then 'Q6'
+WHEN 구매일자 > 20141231 then 'Q5'
+WHEN 구매일자 > 20140931 then 'Q4'
+WHEN 구매일자 > 20140631 then 'Q3'
+WHEN 구매일자 > 20140331 then 'Q2' 
+ELSE 'Q1' END AS 분기
+FROM purprod2);
+
 -- 분기별 평균매출데이터 탐색(기존고객)
-select
-(select avg(구매금액) pur14Q1 from pur14Q1
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur14Q2 from pur14Q2
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur14Q3 from pur14Q3
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur14Q4 from pur14Q4
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur15Q1 from pur15Q1
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur15Q2 from pur15Q2
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur15Q3 from pur15Q3
-where 고객번호 in (select * from custorigin)),
-(select avg(구매금액) pur15Q4 from pur15Q4
-where 고객번호 in (select * from custorigin))
-from dual;
+select 분기, avg(구매금액) 평균매출 from purprod2 a
+join custorigin b on a.고객번호 = b.고객번호
+group by 분기
+order by 분기;
 
 -- 분기별 평균매출데이터 탐색(감소고객)
-select
-(select avg(구매금액) pur14Q1 from pur14Q1
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur14Q2 from pur14Q2
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur14Q3 from pur14Q3
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur14Q4 from pur14Q4
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur15Q1 from pur15Q1
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur15Q2 from pur15Q2
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur15Q3 from pur15Q3
-where 고객번호 in (select 고객번호 from purbydiv
-where 성장률 < 1.062483356)),
-(select avg(구매금액) pur15Q4 from pur15Q4
-where 고객번호 in(select 고객번호 from purbydiv
-where 성장률 < 1.062483356))
-from dual;
+
+select 분기, avg(구매금액) 평균매출 from purprod2 a
+join purbydiv b on a.고객번호 = b.고객번호
+where 성장률 < 1.062483356
+group by 분기
+order by 분기;
 
 -- 기존고객 분기별 평균 방문빈도수 
 

@@ -490,60 +490,9 @@ JOIN PP3AVG A ON P.소분류코드 = A.소분류코드
 WHERE P.구매금액 > (A.평균/50) or p.구매금액 >= 800
 ORDER BY 구매금액 DESC;
 
--- 구매데이터 분기, 반기 별로 나누기
-
-create table pur15Q1 as
-select * FROM purPROD2
-where 20150401 > 구매일자 AND  구매일자 > 20150000;
-
-create table pur15Q2 as
-select * FROM purPROD2
-where 20150701 > 구매일자 AND  구매일자 > 20150331;
-
-create table pur15Q3 as
-select * FROM purPROD2
-where 20151001 > 구매일자 AND  구매일자 > 20150631;
-
-create table pur15Q4 as
-select * FROM purPROD2
-where 20160101 > 구매일자 AND  구매일자 > 20150931;
-
-create table pur14Q1 as
-select * FROM purPROD2
-where 20140401 > 구매일자 AND  구매일자 > 20140000;
-
-create table pur14Q2 as
-select * FROM purPROD2
-where 20140701 > 구매일자 AND  구매일자 > 20140331;
-
-create table pur14Q3 as
-select * FROM purPROD2
-where 20141001 > 구매일자 AND  구매일자 > 20140631;
-
-create table pur14Q4 as
-select * FROM purPROD2
-where 20150101 > 구매일자 AND  구매일자 > 20140931;
-
-create table pur14H1 as
-select * FROM purPROD2
-where 20140701 > 구매일자 AND  구매일자 > 20131231;
-
-create table pur14H2 as
-select * FROM purPROD2
-where 20150101 > 구매일자 AND  구매일자 > 20140631;
-
-create table pur15H1 as
-select * FROM purPROD2
-where 20150701 > 구매일자 AND  구매일자 > 20141231;
-
-create table pur15H2 as
-select * FROM purPROD2
-where 20160101 > 구매일자 AND  구매일자 > 20150631;
-
-
 -- 기존고객 == 모든 반기마다 구매이력이 있는 고객
 create table custorigin as
-select a.고객번호 기존고객 from
+select a.고객번호 고객번호 from
 (select distinct 고객번호 from purprod2
 where (구매일자>=20140101 and 구매일자 <=20140631)) a
 join (select distinct 고객번호 from purprod2

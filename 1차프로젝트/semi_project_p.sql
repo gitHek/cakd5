@@ -512,16 +512,53 @@ join custorigin d on a.고객번호 = d.기존고객;
 
 -- 감소고객 정의 : 매출 성장률보다 적게 구매한 고객 or 전년도보다 적게 구매한 고객
 create table purbydiv as
-select a.고객번호, "15H1"/"14H1" 성장률 from custdemo a 
-join (select 고객번호, sum(구매금액) "14H1" from pur14H1 group by 고객번호) b on a.고객번호 = b.고객번호
-join (select 고객번호, sum(구매금액) "15H1" from pur15H1 group by 고객번호) c on a.고객번호 = c.고객번호
+select a.고객번호, "15H1"/"14H1" 성장률 from custorigin a 
+join (select 고객번호, sum(구매금액) "14H1" from (select * from purprod2 where 분기 = 'Q1' or 분기 = 'Q2') group by 고객번호) b on a.고객번호 = b.고객번호
+join (select 고객번호, sum(구매금액) "15H1" from (select * from purprod2 where 분기 = 'Q5' or 분기 = 'Q6') group by 고객번호) c on a.고객번호 = c.고객번호
 join custorigin d on a.고객번호 = d.고객번호;
 
 (select * from purbydiv
-where 성장률 < 1.062483356);
+where 성장률 < 0.8);
 
 -- 기존고객이 아닌사람들의 분기별 총 매출
 select 분기, sum(구매금액) from purprod2
 where 고객번호 not in (select * from custorigin)
 group by 분기
 order by 분기;
+
+-- 구매감소고객의 14년도 1반기 매출 : 90728721758 원
+
+select sum(구매금액) from purprod2 a
+join purbydiv b on a.고객번호 = b.고객번호
+where 성장률 < 1 and (분기 = 'Q1' or 분기 = 'Q2');
+
+-- 구매감소고객의 15년도 1반기 매출 : 62331206475 원
+
+select sum(구매금액) from purprod2 a
+join purbydiv b on a.고객번호 = b.고객번호
+where 성장률 < 1 and (분기 = 'Q5' or 분기 = 'Q6');
+
+-- 감소고객 수 : 9254
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 1;
+
+-- 구매감소고객의 14년도 1반기 매출 : 90728721758 원
+
+select sum(구매금액) from purprod2 a
+join purbydiv b on a.고객번호 = b.고객번호
+where 성장률 < 0.7 and (분기 = 'Q1' or 분기 = 'Q2');
+
+-- 구매감소고객의 15년도 1반기 매출 : 62331206475 원
+
+select sum(구매금액) from purprod2 a
+join purbydiv b on a.고객번호 = b.고객번호
+where 성장률 < 0.7 and (분기 = 'Q5' or 분기 = 'Q6');
+
+-- 감소고객 수 : 9254
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 0.7;
+
+select 통합분류,분기,avg(평균매출) from ;
+

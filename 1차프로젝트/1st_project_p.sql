@@ -1,3 +1,26 @@
+-- 기존고객 == 모든 반기마다 구매이력이 있는 고객
+create table custorigin as
+select a.고객번호 고객번호 from
+(select distinct 고객번호 from purprod2
+where (구매일자>=20140101 and 구매일자 <=20140631)) a
+join (select distinct 고객번호 from purprod2
+where (구매일자>=20140701 and 구매일자 <=20141231)) b on a.고객번호 = b.고객번호 
+join (select distinct 고객번호 from purprod2
+where (구매일자>=20150101 and 구매일자 <=20150631)) c on a.고객번호 = c.고객번호
+join (select distinct 고객번호 from purprod2
+where (구매일자>=20150701 and 구매일자 <=20151231)) d on a.고객번호 = d.고객번호
+order by a.고객번호;
+
+-- 감소고객 정의 : 매출 성장률보다 적게 구매한 고객 or 전년도보다 적게 구매한 고객(시즈널리티 적용)
+create table purbydiv as
+select a.고객번호, "15H1"/"14H1" 성장률 from custorigin a 
+join (select 고객번호, sum(구매금액)*1.045 "14H1" from (select * from purprod2 where 분기 = 'Q1' or 분기 = 'Q2') group by 고객번호) b on a.고객번호 = b.고객번호
+join (select 고객번호, sum(구매금액)*1.017 "15H1" from (select * from purprod2 where 분기 = 'Q5' or 분기 = 'Q6') group by 고객번호) c on a.고객번호 = c.고객번호
+join custorigin d on a.고객번호 = d.고객번호;
+
+(select * from purbydiv
+where 성장률 < 0.8);
+
 -- 분기,반기별 라벨 붙이기
 create table purprod3 as
 (SELECT 제휴사,영수증번호,소분류코드,소분류명,통합분류,소비재분류,고객번호,점포코드,구매일자,구매시간,구매금액,year,월,
@@ -85,17 +108,30 @@ where 성장률 < 0.8
 group by 제휴사, 분기
 order by 제휴사, 분기;
 
--- 관리대상고객의 14년도 1반기 매출 : 56401500984 원
+-- 기존고객의 1반기 매출 : 150705606508 원
+
+select sum(구매금액) from purprod2 a
+join custorigin b on a.고객번호 = b.고객번호
+where (분기 = 'Q1' or 분기 = 'Q2');
+
+-- 기존고객의 3반기 매출 : 164494835833 원
+
+select sum(구매금액) from purprod2 a
+join custorigin b on a.고객번호 = b.고객번호
+where  (분기 = 'Q5' or 분기 = 'Q6');
+
+
+-- 관리대상고객의 1반기 매출 : 59310081176 원
 
 select sum(구매금액) from purprod2 a
 join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 0.8 and (분기 = 'Q1' or 분기 = 'Q2');
+where 성장률 < 0.9 and (분기 = 'Q1' or 분기 = 'Q2');
 
--- 관리대상고객의 15년도 1반기 매출 : 30458845532 원
+-- 관리대상고객의 3반기 매출 : 32818370138 원
 
 select sum(구매금액) from purprod2 a
 join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 0.8 and (분기 = 'Q5' or 분기 = 'Q6');
+where 성장률 < 0.9 and (분기 = 'Q5' or 분기 = 'Q6');
 
 -- 전체 고객의 15년 1반기 매출 : 165231857377 원
 select sum(구매금액) from purprod2 a
@@ -108,7 +144,23 @@ select count(*) from custorigin;
 -- 관리대상고객 수 : 4551
 select count(*) from custorigin a
 join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 1.0623;
+
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 1;
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 0.9;
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
 where 성장률 < 0.8;
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 0.7;
+select count(*) from custorigin a
+join purbydiv b on a.고객번호=b.고객번호
+where 성장률 < 0.6;
 
 -- 통합분류별 분기별 고객당 평균매출데이터 탐색(기존고객)
 select 통합분류,분기, avg(평균매출) 평균매출 from (
@@ -212,3 +264,115 @@ order by 이용횟수 ;
 
 -- 채널을 이용하지 않은 사람중에 관리대상고객의 비율?
 
+-- 기존고객 분기별 총 방문빈도수 
+
+select 분기, sum(빈도) from(
+select 분기,고객번호, count(*) 빈도 from(
+select c.고객번호,구매일자,분기,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+group by c.고객번호,구매일자,분기)
+group by 분기,고객번호)
+group by 분기
+order by 분기;
+
+-- 기존고객 반기별 총 방문빈도수 
+
+select 반기, sum(빈도) from(
+select 반기,고객번호, count(*) 빈도 from(
+select c.고객번호,구매일자,반기,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+group by c.고객번호,구매일자,반기)
+group by 반기,고객번호)
+group by 반기
+order by 반기;
+
+
+-- 기존고객 반기별 고객별 총 방문 빈도수 
+
+select 반기,고객번호, count(*) 빈도 from(
+select c.고객번호,반기,구매일자,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+group by c.고객번호,반기,구매일자)
+group by 반기,고객번호
+order by 반기,고객번호;
+
+-- 고객별 반기별 총 방문수 구하기
+select a.고객번호,H1,H2,H3,H4 from
+(select 고객번호, count(*) H1 from(
+select c.고객번호,구매일자,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+where 반기 = 'H1'
+group by c.고객번호,구매일자)
+group by 고객번호
+order by 고객번호) a
+join (select 고객번호, count(*) H2 from(
+select c.고객번호,구매일자,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+where 반기 = 'H2'
+group by c.고객번호,구매일자)
+group by 고객번호
+order by 고객번호) b on a.고객번호 = b.고객번호
+join (select 고객번호, count(*) H3 from(
+select c.고객번호,구매일자,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+where 반기 = 'H3'
+group by c.고객번호,구매일자)
+group by 고객번호
+order by 고객번호) c on a.고객번호 = c.고객번호
+join (select 고객번호, count(*) H4 from(
+select c.고객번호,구매일자,count(*) "방문" from custorigin c
+join purprod2 p on c.고객번호 = p.고객번호
+where 반기 = 'H4'
+group by c.고객번호,구매일자)
+group by 고객번호
+order by 고객번호) d on a.고객번호 = d.고객번호;
+
+-- 고객별 반기별 총 구매금액 구하기 
+
+select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
+(select b.고객번호, nvl(구매금액,0) H1반기 from (
+SELECT 고객번호, SUM(구매금액) 구매금액 FROM PURPROD2
+where 반기 = 'H1' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호
+order by 고객번호) a
+join (select b.고객번호, nvl(구매금액,0) H2반기 from (
+SELECT 고객번호, SUM(구매금액) 구매금액 FROM PURPROD2
+where 반기 = 'H2' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) b on a.고객번호 = b.고객번호
+join (select b.고객번호, nvl(구매금액,0) H3반기 from (
+SELECT 고객번호, SUM(구매금액) 구매금액 FROM PURPROD2
+where 반기 = 'H3' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) c on a.고객번호 = c.고객번호
+join (select b.고객번호, nvl(구매금액,0) H4반기 from (
+SELECT 고객번호, SUM(구매금액) 구매금액 FROM PURPROD2
+where 반기 = 'H4'  -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;
+
+-- 반기별 구매 횟수 구하기
+
+select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
+(select b.고객번호, nvl(구매횟수,0) H1반기 from (
+SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
+where 반기 = 'H1' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호
+order by 고객번호) a
+join (select b.고객번호, nvl(구매횟수,0) H2반기 from (
+SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
+where 반기 = 'H2' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) b on a.고객번호 = b.고객번호
+join (select b.고객번호, nvl(구매횟수,0) H3반기 from (
+SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
+where 반기 = 'H3' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) c on a.고객번호 = c.고객번호
+join (select b.고객번호, nvl(구매횟수,0) H4반기 from (
+SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
+where 반기 = 'H4' -- 여기에 추가할 조건 넣으세요
+GROUP BY 고객번호) a
+join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;

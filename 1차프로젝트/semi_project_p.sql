@@ -490,18 +490,7 @@ JOIN PP3AVG A ON P.소분류코드 = A.소분류코드
 WHERE P.구매금액 > (A.평균/50) or p.구매금액 >= 800
 ORDER BY 구매금액 DESC;
 
--- 기존고객 == 모든 반기마다 구매이력이 있는 고객
-create table custorigin as
-select a.고객번호 고객번호 from
-(select distinct 고객번호 from purprod2
-where (구매일자>=20140101 and 구매일자 <=20140631)) a
-join (select distinct 고객번호 from purprod2
-where (구매일자>=20140701 and 구매일자 <=20141231)) b on a.고객번호 = b.고객번호 
-join (select distinct 고객번호 from purprod2
-where (구매일자>=20150101 and 구매일자 <=20150631)) c on a.고객번호 = c.고객번호
-join (select distinct 고객번호 from purprod2
-where (구매일자>=20150701 and 구매일자 <=20151231)) d on a.고객번호 = d.고객번호
-order by a.고객번호;
+
 
 -- 반기별 고객 구매금액총액을 구하고 14H1 과 15H1을 비교해서 purbygap을 새로 만들기
 create table purbygap as
@@ -510,15 +499,7 @@ join (select 고객번호, sum(구매금액) "14H1" from pur14H1 group by 고객번호) b on
 join (select 고객번호, sum(구매금액) "15H1" from pur15H1 group by 고객번호) c on a.고객번호 = c.고객번호 
 join custorigin d on a.고객번호 = d.기존고객;
 
--- 감소고객 정의 : 매출 성장률보다 적게 구매한 고객 or 전년도보다 적게 구매한 고객
-create table purbydiv as
-select a.고객번호, "15H1"/"14H1" 성장률 from custorigin a 
-join (select 고객번호, sum(구매금액) "14H1" from (select * from purprod2 where 분기 = 'Q1' or 분기 = 'Q2') group by 고객번호) b on a.고객번호 = b.고객번호
-join (select 고객번호, sum(구매금액) "15H1" from (select * from purprod2 where 분기 = 'Q5' or 분기 = 'Q6') group by 고객번호) c on a.고객번호 = c.고객번호
-join custorigin d on a.고객번호 = d.고객번호;
 
-(select * from purbydiv
-where 성장률 < 0.8);
 
 -- 기존고객이 아닌사람들의 분기별 총 매출
 select 분기, sum(구매금액) from purprod2

@@ -112,26 +112,26 @@ order by 제휴사, 분기;
 
 select sum(구매금액) from purprod2 a
 join custorigin b on a.고객번호 = b.고객번호
-where (분기 = 'Q1' or 분기 = 'Q2');
+where 반기 = 'H1';
 
 -- 기존고객의 3반기 매출 : 164494835833 원
 
 select sum(구매금액) from purprod2 a
 join custorigin b on a.고객번호 = b.고객번호
-where  (분기 = 'Q5' or 분기 = 'Q6');
+where  반기 = 'H3';
 
 
 -- 관리대상고객의 1반기 매출 : 59310081176 원
 
 select sum(구매금액) from purprod2 a
 join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 0.9 and (분기 = 'Q1' or 분기 = 'Q2');
+where 성장률 < 1.0915 and 반기 = 'H1';
 
 -- 관리대상고객의 3반기 매출 : 32818370138 원
 
 select sum(구매금액) from purprod2 a
 join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 0.9 and (분기 = 'Q5' or 분기 = 'Q6');
+where 성장률 < 1.0915 and 반기 = 'H3';
 
 -- 전체 고객의 15년 1반기 매출 : 165231857377 원
 select sum(구매금액) from purprod2 a
@@ -144,7 +144,7 @@ select count(*) from custorigin;
 -- 관리대상고객 수 : 4551
 select count(*) from custorigin a
 join purbydiv b on a.고객번호=b.고객번호
-where 성장률 < 1.0623;
+where 성장률 < 1.0915;
 
 select count(*) from custorigin a
 join purbydiv b on a.고객번호=b.고객번호
@@ -332,7 +332,7 @@ order by 고객번호) d on a.고객번호 = d.고객번호;
 select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
 (select b.고객번호, nvl(구매금액,0) H1반기 from (
 SELECT 고객번호, SUM(구매금액) 구매금액 FROM PURPROD2
-where 반기 = 'H1' -- 여기에 추가할 조건 넣으세요
+where 반기 = 'H1'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호
 order by 고객번호) a
@@ -357,22 +357,24 @@ join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;
 select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
 (select b.고객번호, nvl(구매횟수,0) H1반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H1' -- 여기에 추가할 조건 넣으세요
+where 반기 = 'H1' and 통합분류 = '위생용품'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호
 order by 고객번호) a
 join (select b.고객번호, nvl(구매횟수,0) H2반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H2' -- 여기에 추가할 조건 넣으세요
+where 반기 = 'H2' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) b on a.고객번호 = b.고객번호
 join (select b.고객번호, nvl(구매횟수,0) H3반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H3' -- 여기에 추가할 조건 넣으세요
+where 반기 = 'H3' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) c on a.고객번호 = c.고객번호
 join (select b.고객번호, nvl(구매횟수,0) H4반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H4' -- 여기에 추가할 조건 넣으세요
+where 반기 = 'H4' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;
+
+select * from purprod2 where 통합분류 = '악기';

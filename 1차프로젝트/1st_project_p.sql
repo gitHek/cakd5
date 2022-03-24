@@ -18,6 +18,12 @@ join (select 고객번호, sum(구매금액)*1.045 "14H1" from (select * from purprod2 w
 join (select 고객번호, sum(구매금액)*1.017 "15H1" from (select * from purprod2 where 분기 = 'Q5' or 분기 = 'Q6') group by 고객번호) c on a.고객번호 = c.고객번호
 join custorigin d on a.고객번호 = d.고객번호;
 
+create table purbydiv2 as
+select a.고객번호, "15H1"/"14H1" 성장률 from custorigin a 
+join (select 고객번호, sum(구매금액)*1.045 "14H1" from (select * from purprod2 where 분기 = 'Q1' or 분기 = 'Q2') group by 고객번호) b on a.고객번호 = b.고객번호
+join (select 고객번호, sum(구매금액)*0.983 "15H1" from (select * from purprod2 where 분기 = 'Q7' or 분기 = 'Q8') group by 고객번호) c on a.고객번호 = c.고객번호
+join custorigin d on a.고객번호 = d.고객번호;
+
 (select * from purbydiv
 where 성장률 < 0.8);
 
@@ -357,24 +363,56 @@ join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;
 select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
 (select b.고객번호, nvl(구매횟수,0) H1반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H1' and 통합분류 = '위생용품'-- 여기에 추가할 조건 넣으세요
+where 반기 = 'H1' and 소비재분류 = '기타'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호
 order by 고객번호) a
 join (select b.고객번호, nvl(구매횟수,0) H2반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H2' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
+where 반기 = 'H2' and 소비재분류 = '기타'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) b on a.고객번호 = b.고객번호
 join (select b.고객번호, nvl(구매횟수,0) H3반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H3' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
+where 반기 = 'H3' and 소비재분류 = '기타'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) c on a.고객번호 = c.고객번호
 join (select b.고객번호, nvl(구매횟수,0) H4반기 from (
 SELECT 고객번호, count(*) 구매횟수 FROM PURPROD2
-where 반기 = 'H4' and 통합분류 = '악기'-- 여기에 추가할 조건 넣으세요
+where 반기 = 'H4' and 소비재분류 = '기타'-- 여기에 추가할 조건 넣으세요
 GROUP BY 고객번호) a
 join custorigin b on a.고객번호(+) = b.고객번호) d on a.고객번호 = d.고객번호;
 
 select * from purprod2 where 통합분류 = '악기';
+
+-- 관리대상고객에 1로 라벨 붙이기
+select a.고객번호,ceil(nvl(성장률,0)) from custorigin a
+join (select * from purbydiv2
+where 성장률 < 0.8
+order by 고객번호) b on a.고객번호= b.고객번호(+)
+order by 고객번호;
+
+-- 고객당 반기별 최근구매일?
+select a.고객번호,H1반기,H2반기,H3반기,H4반기 from
+(select b.고객번호, to_date(20140701)-max(to_date(구매일자)) H1반기 from purprod2 a
+join custorigin b on a.고객번호(+) = b.고객번호
+where 반기 = 'H1'
+group by b.고객번호
+order by b.고객번호) a
+join (select b.고객번호, to_date(20150101)-max(to_date(구매일자)) H2반기 from purprod2 a
+join custorigin b on a.고객번호(+) = b.고객번호
+where 반기 = 'H2'
+group by b.고객번호) b on a.고객번호 = b.고객번호
+join (select b.고객번호, to_date(20150701)-max(to_date(구매일자)) H3반기 from purprod2 a
+join custorigin b on a.고객번호(+) = b.고객번호
+where 반기 = 'H3'
+group by b.고객번호) c on a.고객번호 = c.고객번호
+join (select b.고객번호, to_date(20160101)-max(to_date(구매일자)) H4반기 from purprod2 a
+join custorigin b on a.고객번호(+) = b.고객번호
+where 반기 = 'H4'
+group by b.고객번호) d on a.고객번호 = d.고객번호;
+
+-- 고객별 채널 이용 횟수
+select a.고객번호, 성별 from custorigin a
+join custdemo b on a.고객번호 = b.고객번호
+order by 고객번호;

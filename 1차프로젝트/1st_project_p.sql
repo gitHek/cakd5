@@ -387,8 +387,8 @@ select * from purprod2 where 통합분류 = '악기';
 
 -- 관리대상고객에 1로 라벨 붙이기
 select a.고객번호,ceil(nvl(성장률,0)) from custorigin a
-join (select * from purbydiv2
-where 성장률 < 0.8
+join (select * from purbydiv
+where 성장률 < 1.0623
 order by 고객번호) b on a.고객번호= b.고객번호(+)
 order by 고객번호;
 
@@ -415,4 +415,59 @@ group by b.고객번호) d on a.고객번호 = d.고객번호;
 -- 고객별 채널 이용 횟수
 select a.고객번호, 성별 from custorigin a
 join custdemo b on a.고객번호 = b.고객번호
+order by 고객번호;
+
+-- 거주지역이 null인 고객의 고객번호, 거주지역
+create table nullcust as(
+select 고객번호,거주지역 from
+(select a.고객번호,점포코드, b.구매횟수 from 
+(select 고객번호, 점포코드 , count(*) 구매횟수 from purprod2
+where 고객번호 in (select a.고객번호 from custorigin a
+join custdemo b on a.고객번호 = b.고객번호
+where 거주지역 is null)
+group by 고객번호, 점포코드
+order by 고객번호) a 
+join 
+(select 고객번호,max(구매횟수) 구매횟수 from (
+select 고객번호, 점포코드 , count(*) 구매횟수 from purprod2
+where 고객번호 in (select a.고객번호 from custorigin a
+join custdemo b on a.고객번호 = b.고객번호
+where 거주지역 is null)
+group by 고객번호, 점포코드
+order by 고객번호)
+group by 고객번호) b on a.고객번호 = b.고객번호 and a.구매횟수 = b.구매횟수) a
+join 
+(select a.점포코드, a.거주지역, b.고객수 from (
+select 점포코드, 거주지역, count(*) 고객수 from (
+select 점포코드, 거주지역 ,c.고객번호, count(a.고객번호) from purprod2 a
+join custdemo b on a.고객번호 = b.고객번호
+join custorigin c on a.고객번호 = c.고객번호
+group by 점포코드, 거주지역,c.고객번호)
+group by 점포코드, 거주지역
+order by 점포코드) a
+join(
+select 점포코드,max(고객수) 고객수 from(
+select 점포코드, 거주지역, count(*) 고객수 from (
+select 점포코드, 거주지역 ,c.고객번호, count(a.고객번호) from purprod2 a
+join custdemo b on a.고객번호 = b.고객번호
+join custorigin c on a.고객번호 = c.고객번호
+group by 점포코드, 거주지역,c.고객번호)
+group by 점포코드, 거주지역)
+group by 점포코드) b on a. 점포코드 = b.점포코드 and a.고객수 = b.고객수) b on a.점포코드 = b.점포코드);
+
+-- 고객별로 가장 많이 산 구매시간
+
+select 고객번호, avg(구매시간) from
+(select a.고객번호, b.구매시간 from
+(select 고객번호, max(횟수) 횟수 from
+(select b.고객번호 , 구매시간, count(*) 횟수 from purprod2 a
+join custorigin b on a.고객번호 = b.고객번호
+where 반기 = 'H1' or 반기 = 'H2'
+group by b.고객번호,구매시간) a
+group by 고객번호) a
+join (select b.고객번호 , 구매시간, count(*) 횟수 from purprod2 a
+join custorigin b on a.고객번호 = b.고객번호
+where 반기 = 'H1' or 반기 = 'H2' 
+group by b.고객번호,구매시간) b on (a.고객번호 = b.고객번호 and a.횟수 = b.횟수))
+group by 고객번호
 order by 고객번호;

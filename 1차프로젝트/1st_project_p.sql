@@ -120,28 +120,26 @@ select sum(구매금액) from purprod2 a
 join custorigin b on a.고객번호 = b.고객번호
 where 반기 = 'H1';
 
--- 기존고객의 3반기 매출 : 164494835833 원
+-- 기존고객의 4반기 매출 : 170181960556 원
 
 select sum(구매금액) from purprod2 a
 join custorigin b on a.고객번호 = b.고객번호
-where  반기 = 'H3';
+where  반기 = 'H4';
 
 
 -- 관리대상고객의 1반기 매출 : 59310081176 원
 
 select sum(구매금액) from purprod2 a
-join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 1.0915 and 반기 = 'H1';
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1.0884 and 반기 = 'H1';
 
 -- 관리대상고객의 3반기 매출 : 32818370138 원
 
 select sum(구매금액) from purprod2 a
-join purbydiv b on a.고객번호 = b.고객번호
-where 성장률 < 1.0915 and 반기 = 'H3';
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1.0884 and 반기 = 'H4';
 
--- 전체 고객의 15년 1반기 매출 : 165231857377 원
-select sum(구매금액) from purprod2 a
-where  분기 = 'Q5' or 분기 = 'Q6';
+
 
 
 -- 기존고객 수 : 19147
@@ -152,20 +150,57 @@ select count(*) from custorigin a
 join purbydiv b on a.고객번호=b.고객번호
 where 성장률 < 1.0915;
 
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1.0884 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1.0884 and 반기 = 'H4';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 1 and 반기 = 'H4';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.9 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.9 and 반기 = 'H4';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.8 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.8 and 반기 = 'H4';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.7 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.7 and 반기 = 'H4';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.6 and 반기 = 'H1';
+select sum(구매금액) from purprod2 a
+join purbydiv2 b on a.고객번호 = b.고객번호
+where 성장률 < 0.6 and 반기 = 'H4';
+
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
+join purbydiv2 b on a.고객번호=b.고객번호
 where 성장률 < 1;
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
+join purbydiv2 b on a.고객번호=b.고객번호
 where 성장률 < 0.9;
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
+join purbydiv2 b on a.고객번호=b.고객번호
 where 성장률 < 0.8;
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
+join purbydiv2 b on a.고객번호=b.고객번호
 where 성장률 < 0.7;
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
+join purbydiv2 b on a.고객번호=b.고객번호
 where 성장률 < 0.6;
 
 -- 통합분류별 분기별 고객당 평균매출데이터 탐색(기존고객)

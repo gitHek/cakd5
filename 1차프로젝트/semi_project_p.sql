@@ -472,17 +472,6 @@ CREATE TABLE PP3AVG AS
 SELECT 소분류코드, 소분류명, ROUND(AVG(구매금액)) 평균 FROM pp11
 GROUP BY 소분류코드, 소분류명;
 
-
-SELECT P.제휴사,p.통합분류,P.소분류명, P.소분류코드, P.고객번호, P.구매일자, P.구매금액, 소비재분류 FROM PP11 P
-JOIN PP3AVG A ON P.소분류코드 = A.소분류코드
-WHERE P.구매금액 < (A.평균/50) and p.구매금액 <=800
-ORDER BY 구매금액 DESC;
-
-SELECT count(*) FROM PP11 P
-JOIN PP3AVG A ON P.소분류코드 = A.소분류코드
-WHERE P.구매금액 < (A.평균/50) and p.구매금액 <= 200
-ORDER BY 구매금액 DESC;
-
 -- 낮은 이상치 데이터 제거
 create table pp12 as
 SELECT  p.제휴사,p.영수증번호,p.소분류코드,p.소분류명,p.통합분류,p.소비재분류,p.고객번호,p.점포코드,p.구매일자,p.구매시간,p.구매금액,p.year,p.월 FROM PP11 P

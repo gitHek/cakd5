@@ -19,13 +19,11 @@ join (select 고객번호, sum(구매금액)*1.017 "15H1" from (select * from purprod2 w
 join custorigin d on a.고객번호 = d.고객번호;
 
 create table purbydiv2 as
-select a.고객번호, "15H1"/"14H1" 성장률 from custorigin a 
-join (select 고객번호, sum(구매금액)*1.045 "14H1" from (select * from purprod2 where 분기 = 'Q1' or 분기 = 'Q2') group by 고객번호) b on a.고객번호 = b.고객번호
-join (select 고객번호, sum(구매금액)*0.983 "15H1" from (select * from purprod2 where 분기 = 'Q7' or 분기 = 'Q8') group by 고객번호) c on a.고객번호 = c.고객번호
+select a.고객번호, "15H2"/"14H1" 성장률 from custorigin a 
+join (select 고객번호, sum(구매금액)*1.045 "14H1" from (select * from purprod2 where 반기 = 'H1') group by 고객번호) b on a.고객번호 = b.고객번호
+join (select 고객번호, sum(구매금액)*0.983 "15H2" from (select * from purprod2 where 반기 = 'H4') group by 고객번호) c on a.고객번호 = c.고객번호
 join custorigin d on a.고객번호 = d.고객번호;
 
-(select * from purbydiv
-where 성장률 < 0.8);
 
 -- 분기,반기별 라벨 붙이기
 create table purprod3 as
@@ -506,3 +504,5 @@ where 반기 = 'H1' or 반기 = 'H2'
 group by b.고객번호,구매시간) b on (a.고객번호 = b.고객번호 and a.횟수 = b.횟수))
 group by 고객번호
 order by 고객번호;
+
+

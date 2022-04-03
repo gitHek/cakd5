@@ -145,15 +145,15 @@ select count(*) from custorigin;
 
 -- 관리대상고객 수 : 4551
 select count(*) from custorigin a
-join purbydiv b on a.고객번호=b.고객번호
-where 성장률 < 1.0915;
+join purbydiv2 b on a.고객번호=b.고객번호
+where 성장률 < 1.0622;
 
 select sum(구매금액) from purprod2 a
 join purbydiv2 b on a.고객번호 = b.고객번호
-where 성장률 < 1.0884 and 반기 = 'H1';
+where 성장률 < 1.0622 and 반기 = 'H1';
 select sum(구매금액) from purprod2 a
 join purbydiv2 b on a.고객번호 = b.고객번호
-where 성장률 < 1.0884 and 반기 = 'H4';
+where 성장률 < 1.0622 and 반기 = 'H4';
 select sum(구매금액) from purprod2 a
 join purbydiv2 b on a.고객번호 = b.고객번호
 where 성장률 < 1 and 반기 = 'H1';

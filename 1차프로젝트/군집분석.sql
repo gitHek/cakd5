@@ -126,10 +126,107 @@ group by 제휴사, b.고객번호)
 group by 제휴사
 order by 횟수;
 
+-- 라벨별 경쟁사 이용 및 채널이용
+select 제휴사, round(avg(이용횟수),2) 이용횟수 from (select b.고객번호,nvl(제휴사,'C_ONLINEMALL') 제휴사 ,nvl(이용횟수,0) 이용횟수 from channel a
+join gunzip b on a.고객번호(+) = b.고객번호
+where 라벨 = 0
+order by b.고객번호)
+group by 제휴사
+order by 제휴사;
+select 제휴사, round(avg(이용횟수),2) 이용횟수 from (select b.고객번호,nvl(제휴사,'C_ONLINEMALL') 제휴사 ,nvl(이용횟수,0) 이용횟수 from channel a
+join gunzip b on a.고객번호(+) = b.고객번호
+where 라벨 = 1
+order by b.고객번호)
+group by 제휴사
+order by 제휴사;
+select 제휴사, round(avg(이용횟수),2) 이용횟수 from (select b.고객번호,nvl(제휴사,'C_ONLINEMALL') 제휴사 ,nvl(이용횟수,0) 이용횟수 from channel a
+join gunzip b on a.고객번호(+) = b.고객번호
+where 라벨 = 2
+order by b.고객번호)
+group by 제휴사
+order by 제휴사;
+
+-- 라벨별 제휴사를 이용한 고객 수
+select 제휴사, count(*) from channel a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 2
+group by 제휴사
+order by 제휴사;
 
 
 
 
+select 제휴사 ,round(avg(이용횟수),2) 이용횟수 from channel a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 2
+group by 제휴사
+order by 제휴사;
+
+select count(*) from (
+select distinct a.고객번호 from compet a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 2
+order by 고객번호);
+
+
+select distinct 제휴사 from channel
+order by 제휴사;
+
+select * from channel
+order by 고객번호;
+
+select 제휴사 , round(avg(이용횟수),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 0
+group by a.고객번호 ,제휴사)
+group by 제휴사
+order by 제휴사;
+select 제휴사 , round(avg(이용횟수),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 1
+group by a.고객번호 ,제휴사)
+group by 제휴사
+order by 제휴사;
+select 제휴사 , round(avg(이용횟수),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호 = b.고객번호
+where 라벨 = 2
+group by a.고객번호 ,제휴사)
+group by 제휴사
+order by 제휴사;
+
+-- 라벨별 모든 경쟁사 평균 이용횟수
+select round(avg(nvl(이용횟수,0)),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호= b.고객번호
+where 라벨 = 0
+group by a.고객번호 ,제휴사) a
+join gunzip b on a.고객번호(+) = b.고객번호;
+select round(avg(nvl(이용횟수,0)),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호= b.고객번호
+where 라벨 = 1
+group by a.고객번호 ,제휴사) a
+join gunzip b on a.고객번호(+) = b.고객번호;select round(avg(nvl(이용횟수,0)),2) from(
+select a.고객번호, 제휴사, count(*) 이용횟수 from compet a
+join gunzip b on a.고객번호= b.고객번호
+where 라벨 = 2
+group by a.고객번호 ,제휴사) a
+join gunzip b on a.고객번호(+) = b.고객번호;
+
+
+
+
+
+select distinct 제휴사 from channel;
+
+
+
+
+
+select * from compet;
 
 
 select 고객번호 from purbydiv2

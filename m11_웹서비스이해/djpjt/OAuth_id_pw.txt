@@ -1,0 +1,5 @@
+999146595841-1kg5io94gtcvm8s4261v6g5t08d2dsfi.apps.googleusercontent.com
+
+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
+
+{"web":{"client_id":"999146595841-1kg5io94gtcvm8s4261v6g5t08d2dsfi.apps.googleusercontent.com","project_id":"cakddj","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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","redirect_uris":["http://127.0.0.1:8000/accounts/google/login/callback/"],"javascript_origins":["http://127.0.0.1:8000"]}}
